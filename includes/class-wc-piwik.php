@@ -12,6 +12,8 @@ class WC_Piwik extends WC_Integration
 {
     const PIWIK_PRO_URL = 'piwik.pro';
 
+    public $id;
+
     public $form_text_fields = array();
 
     /**
@@ -41,7 +43,6 @@ class WC_Piwik extends WC_Integration
         $this->disconnectPiwikCloud();
 
 		// Define user set variables
-
 
         $this->addActions();
     }
@@ -74,7 +75,7 @@ class WC_Piwik extends WC_Integration
 				analytics plugin (i.e. Piwiktracking plugin)', 'woocommerce'),
 				'type' 				=> 'checkbox',
 				'checkboxgroup'		=> 'start',
-				'default' 			=> 'yes'
+				'default' 			=> ($this->is_wp_piwik_installed()) ? 'no' : 'yes'
 			),
 			'piwik_ecommerce_tracking_enabled' => array(
 				'label' 			=> __('Add eCommerce tracking code to the thankyou page', 'woocommerce'),
@@ -90,6 +91,7 @@ class WC_Piwik extends WC_Integration
 			),
         );
     }
+
 
 	/**
 	 * Piwik standard tracking
@@ -296,8 +298,11 @@ class WC_Piwik extends WC_Integration
         add_action('wp_ajax_nopriv_woocommerce_piwik_get_cart', array($this, 'get_cart'));
         add_action('wp_ajax_woocommerce_piwik_get_cart', array($this, 'get_cart'));
 
-        if (empty($this->piwik_idsite) || !is_numeric($this->piwik_idsite) || empty($this->piwik_domain_name)
-            || is_admin() || current_user_can('manage_options')) {
+        if (
+            ((empty($this->piwik_idsite) || !is_numeric($this->piwik_idsite) || empty($this->piwik_domain_name))
+                && !$this->is_wp_piwik_installed())
+            || is_admin() || current_user_can('manage_options')
+        ) {
             return;
         }
 
@@ -323,16 +328,16 @@ class WC_Piwik extends WC_Integration
     protected function redirectToPiwikPro()
     {
         if (isset($_GET['integrate-piwik-cloud']) && $_GET['integrate-piwik-cloud']) {
-            $token = $this->generateToken();
+            $token   = $this->generateToken();
+            $siteUrl = $this->getSiteUrl();
             delete_option('woocommerce_piwik_integration');
             delete_option('woocommerce_piwik_token');
             delete_option('woocommerce_piwik_ts_valid');
             add_option('woocommerce_piwik_token', $token);
             add_option('woocommerce_piwik_ts_valid', time());
 
-            $siteUrl = $this->getSiteUrl();
-
             header('Location: http://' . self::PIWIK_PRO_URL . '/integrate/woocommerce?shop=' . $siteUrl . '&code=' . $token);
+
             exit;
         }
 
@@ -379,6 +384,9 @@ class WC_Piwik extends WC_Integration
             WC_Admin_Settings::add_message(__('Your site has been successfuly integrated with Piwik Cloud!', 'woocommerce'));
             delete_option('woocommerce_piwik_ts_valid');
             add_option('woocommerce_piwik_integrated', true);
+
+            $this->update_wp_piwik_settings();
+
         } else {
             if (!empty($_GET['code']) || !empty($_GET['piwikurl']) || !empty($_GET['idsite'])) {
                 header('Location: ' . site_url() .'/wp-admin/admin.php?page=wc-settings&tab=integration');
@@ -409,6 +417,8 @@ class WC_Piwik extends WC_Integration
                 delete_option('woocommerce_piwik_integrated');
 
                 WC_Admin_Settings::add_message(__('Your site has been successfully disconnected from Piwik Cloud!', 'woocommerce'));
+
+                $this->update_wp_piwik_settings();
             } else {
                 WC_Admin_Settings::add_error(__('An error occurred when trying to disconnect, please try again later', 'woocommerce'));
             }
@@ -595,5 +605,67 @@ class WC_Piwik extends WC_Integration
         $siteUrl = str_replace('https://', '', $siteUrl);
 
         return $siteUrl;
+    }
+
+    /**
+     * Check if wp piwik is installed
+     *
+     * @return bool
+     */
+    protected function is_wp_piwik_installed()
+    {
+        return (isset($GLOBALS['wp_piwik']));
+    }
+
+    protected function get_wp_piwik_settings()
+    {
+        return get_option('wp-piwik_settings');
+    }
+
+    protected function get_wp_piwik_global_settings()
+    {
+        return get_option('wp-piwik_global-settings');
+    }
+
+    protected function set_wp_piwik_settings($value)
+    {
+        update_option('wp-piwik_settings', $value);
+    }
+
+    protected function set_wp_piwik_global_settings($value)
+    {
+        update_option('wp-piwik_global-settings', $value);
+    }
+
+    protected function update_wp_piwik_settings()
+    {
+        if (!$this->is_wp_piwik_installed()) {
+            return;
+        }
+
+        $settings       = $this->get_wp_piwik_settings();
+        $globalSettings = $this->get_wp_piwik_global_settings();
+
+        if ($idSite = $this->get_option('piwik_idsite')) {
+            $settings['site_id']                 = $idSite;
+            $globalSettings['add_tracking_code'] = 0;
+            $globalSettings['piwik_url']         = 'http://' . $this->get_option('piwik_domain_name');
+            $this->setOption('piwik_standard_tracking_enabled', 'yes');
+
+            $this->set_wp_piwik_settings($settings);
+            $this->set_wp_piwik_global_settings($globalSettings);
+
+            WC_Admin_Settings::add_message(__('Introduced changes to WP Piwik settings. Please update them according to your needs!', 'woocommerce'));
+        } else {
+            $settings['site_id']                 = '';
+            $globalSettings['add_tracking_code'] = 0;
+            $globalSettings['piwik_url']         = '';
+            $this->setOption('piwik_standard_tracking_enabled', 'no');
+
+            $this->set_wp_piwik_settings($settings);
+            $this->set_wp_piwik_global_settings($globalSettings);
+
+            WC_Admin_Settings::add_message(__('Introduced changes to WP Piwik settings. Please update them according to your needs!', 'woocommerce'));
+        }
     }
 }
