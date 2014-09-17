@@ -6,7 +6,7 @@ Will be required for WooCommerce shops using the integration from WooCommerce 2.
 
 # Changelog
 
-
+* 2.0.0 - Raised version to indicate plugin change to PiwikPRO version
 * 1.0.1 - Added WP-Piwik compatibility
 * 1.0.0 - First release
 

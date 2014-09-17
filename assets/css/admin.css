@@ -1,0 +1,41 @@
+.tab-custom {
+    border: 1px solid #ccc;
+    border-right: 0;
+    display: block;
+    float: left;
+    width: 20%;
+    min-width: 130px;
+    background: #e4e4e4;
+    color: #555;
+    font-size: 16px;
+    line-height: 23px;
+    padding: 9px 16px;
+    text-decoration: none;
+    text-align: center;
+}
+.tab-margin {
+    margin-bottom: 20px;
+}
+.tab-custom.last {
+    border-right: 1px solid #ccc;
+}
+.tab-custom:hover {
+    background-color: #fff;
+    color: #000;
+}
+
+.tab-custom.enabled {
+    background-color: #fff;
+    color: #000;
+    padding: 9px 16px;
+}
+
+.title-custom {
+    margin-top: 60px;
+}
+
+.subsubsub a.current {
+    font-size: 23px;
+    font-weight: 400;
+    padding: 9px 15px 4px 0;
+}
