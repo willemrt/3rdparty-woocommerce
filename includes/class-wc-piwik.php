@@ -292,6 +292,10 @@ class WC_Piwik extends WC_Integration {
 		add_action( 'wp_ajax_nopriv_woocommerce_piwik_get_cart', array( $this, 'get_cart' ) );
 		add_action( 'wp_ajax_woocommerce_piwik_get_cart', array( $this, 'get_cart' ) );
 
+
+        add_action('woocommerce_after_single_product_summary', array($this, 'product_view'));
+        add_action('woocommerce_after_shop_loop', array($this, 'category_view'));
+
 		if (
 			( ( empty( $this->piwik_idsite ) || ! is_numeric( $this->piwik_idsite ) || empty( $this->piwik_domain_name ) )
 			  && ! $this->is_wp_piwik_installed() )
@@ -324,6 +328,45 @@ class WC_Piwik extends WC_Integration {
 				true );
 		}
 	}
+
+    function category_view()
+    {
+        if (isset($_REQUEST['product_cat']) && !empty($_REQUEST['product_cat'])) {
+
+            $jsCode = sprintf("
+            _paq.push(['setEcommerceView',
+                    false,
+                    false,
+                    '%s'
+            ]);
+            _paq.push(['trackPageView']);
+            ", $_REQUEST['product_cat']);
+
+            wc_enqueue_js($jsCode);
+        }
+    }
+
+    function product_view()
+    {
+        global $product;
+
+        $jsCode = sprintf("
+            _paq.push(['setEcommerceView',
+                    '%d',
+                    '%s',
+                    %s,
+                    %f
+            ]);
+            _paq.push(['trackPageView']);
+        ",
+           $product->get_sku(),
+           $product->get_title(),
+           $this->getProductCategories($product->post->ID),
+           $product->get_price()
+        );
+
+        wc_enqueue_js($jsCode);
+    }
 
 	protected function redirectToPiwikPro() {
 		if ( isset( $_GET['integrate-piwik-cloud'] ) && $_GET['integrate-piwik-cloud'] ) {
@@ -503,6 +546,7 @@ class WC_Piwik extends WC_Integration {
 	 * @return bool
 	 */
 	protected function is_wp_piwik_installed() {
+        return true;
 		return ( isset( $GLOBALS['wp_piwik'] ) );
 	}
 
