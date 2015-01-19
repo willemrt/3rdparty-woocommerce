@@ -341,7 +341,7 @@ class WC_Piwik extends WC_Integration {
                     '%s'
             ]);
             _paq.push(['trackPageView']);
-            ", $_REQUEST['product_cat']);
+            ", urlencode($wp_query->queried_object->name));
 
             wc_enqueue_js($jsCode);
         }
@@ -353,7 +353,7 @@ class WC_Piwik extends WC_Integration {
 
         $jsCode = sprintf("
             _paq.push(['setEcommerceView',
-                    '%d',
+                    '%s',
                     '%s',
                     %s,
                     %f
@@ -361,12 +361,23 @@ class WC_Piwik extends WC_Integration {
             _paq.push(['trackPageView']);
         ",
            $product->get_sku(),
-           $product->get_title(),
-           $this->getProductCategories($product->post->ID),
+           urlencode($product->get_title()),
+           $this->getEncodedCategoriesByProduct($product),
            $product->get_price()
         );
 
         wc_enqueue_js($jsCode);
+    }
+
+    protected function getEncodedCategoriesByProduct($product)
+    {
+        $categories = get_the_terms($product->post->ID, 'product_cat' );
+
+        $categories = array_reduce($categories, function($before, $next) {
+            return $before .= urlencode($next->name) . "',";
+        }, "['");
+
+        return rtrim($categories, ',') . ']';
     }
 
 	protected function redirectToPiwikPro() {
