@@ -374,7 +374,7 @@ class WC_Piwik extends WC_Integration {
             return urlencode($element->name);
         }, $categories);
 
-        return sprintf("[%s]", implode("', '", $categories));
+        return sprintf("['%s']", implode("', '", $categories));
     }
 
 	protected function redirectToPiwikPro() {
