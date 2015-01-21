@@ -291,6 +291,9 @@ class WC_Piwik extends WC_Integration {
 		add_action( 'woocommerce_update_options_integration_piwik', array( $this, 'process_admin_options' ) );
 		add_action( 'wp_ajax_nopriv_woocommerce_piwik_get_cart', array( $this, 'get_cart' ) );
 		add_action( 'wp_ajax_woocommerce_piwik_get_cart', array( $this, 'get_cart' ) );
+		add_action( 'woocommerce_after_single_product_summary', array($this, 'product_view') );
+		add_action( 'woocommerce_after_shop_loop', array($this, 'category_view') );
+
 
 		if (
 			( ( empty( $this->piwik_idsite ) || ! is_numeric( $this->piwik_idsite ) || empty( $this->piwik_domain_name ) )
@@ -324,6 +327,55 @@ class WC_Piwik extends WC_Integration {
 				true );
 		}
 	}
+
+    function category_view()
+    {
+        global $wp_query;
+
+        if (isset($wp_query->query_vars['product_cat']) && !empty($wp_query->query_vars['product_cat'])) {
+            $jsCode = sprintf("
+            _paq.push(['setEcommerceView',
+                    false,
+                    false,
+                    '%s'
+            ]);
+            _paq.push(['trackPageView']);
+            ", urlencode($wp_query->queried_object->name));
+            wc_enqueue_js($jsCode);
+        }
+    }
+
+    function product_view()
+    {
+        global $product;
+
+        $jsCode = sprintf("
+            _paq.push(['setEcommerceView',
+                    '%s',
+                    '%s',
+                    %s,
+                    %f
+            ]);
+            _paq.push(['trackPageView']);
+        ",
+           $product->get_sku(),
+           urlencode($product->get_title()),
+           $this->getEncodedCategoriesByProduct($product),
+           $product->get_price()
+        );
+        wc_enqueue_js($jsCode);
+    }
+
+    protected function getEncodedCategoriesByProduct($product)
+    {
+        $categories = get_the_terms($product->post->ID, 'product_cat' );
+
+        $categories = array_map(function($element) {
+            return urlencode($element->name);
+        }, $categories);
+
+        return sprintf("['%s']", implode("', '", $categories));
+    }
 
 	protected function redirectToPiwikPro() {
 		if ( isset( $_GET['integrate-piwik-cloud'] ) && $_GET['integrate-piwik-cloud'] ) {
