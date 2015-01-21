@@ -291,8 +291,8 @@ class WC_Piwik extends WC_Integration {
 		add_action( 'woocommerce_update_options_integration_piwik', array( $this, 'process_admin_options' ) );
 		add_action( 'wp_ajax_nopriv_woocommerce_piwik_get_cart', array( $this, 'get_cart' ) );
 		add_action( 'wp_ajax_woocommerce_piwik_get_cart', array( $this, 'get_cart' ) );
-        add_action( 'woocommerce_after_single_product_summary', array($this, 'product_view') );
-        add_action( 'woocommerce_after_shop_loop', array($this, 'category_view') );
+		add_action( 'woocommerce_after_single_product_summary', array($this, 'product_view') );
+		add_action( 'woocommerce_after_shop_loop', array($this, 'category_view') );
 
 
 		if (
