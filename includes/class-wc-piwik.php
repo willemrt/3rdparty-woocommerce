@@ -371,10 +371,10 @@ class WC_Piwik extends WC_Integration {
         $categories = get_the_terms($product->post->ID, 'product_cat' );
 
         $categories = array_map(function($element) {
-            return urlencode($element->name);
+            return sprintf("'%s'", urlencode($element->name));
         }, $categories);
 
-        return sprintf("['%s']", implode("', '", $categories));
+        return sprintf("[%s]", implode("', '", $categories));
     }
 
 	protected function redirectToPiwikPro() {
