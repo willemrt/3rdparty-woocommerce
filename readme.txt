@@ -30,6 +30,10 @@ In admin menu, click on WooCommerce -> Settings, and switch to Integration tab
 
 == Changelog ==
 
+= 2.1.1 - 08/04/2015 =
+ * Fixed issue with missing categories
+ * List of contributors was updated
+
 = 2.0 - 31/09/2014 =
  * Rewritten by Piwik PRO team
  * Feature: Plugin allows to integrate with Piwik PRO instance
