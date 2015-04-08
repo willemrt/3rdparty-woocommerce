@@ -370,6 +370,10 @@ class WC_Piwik extends WC_Integration {
     {
         $categories = get_the_terms($product->post->ID, 'product_cat' );
 
+        if (!$categories) {
+            $categories = array();
+        }
+
         $categories = array_map(function($element) {
             return sprintf("'%s'", urlencode($element->name));
         }, $categories);

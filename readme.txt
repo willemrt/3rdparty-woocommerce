@@ -1,5 +1,5 @@
 === WooCommerce Piwik integration ===
-Contributors: Piwik Pro, CoenJacobs
+Contributors: Piwik Pro
 Tags: woocommerce, piwik
 Donate link: http://piwik.pro/
 Requires at least: 3.5

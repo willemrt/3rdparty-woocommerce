@@ -14,7 +14,6 @@ Will be required for WooCommerce shops using the integration from WooCommerce 2.
 # Contributors
 
 * PiwikPRO, <http://piwik.pro>
-* CoenJacobs, <https://github.com/coenjacobs>
 
 # License
 
