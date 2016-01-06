@@ -163,10 +163,7 @@ class WC_Piwik extends WC_Integration {
 		update_post_meta( $order_id, '_piwik_tracked', 1 );
 	}
 
-	/**
-	 * Sends cart update request
-	 */
-	function update_cart() {
+	function get_cart_items_js_code() {
 		global $woocommerce;
 
 		$cart_content = $woocommerce->cart->get_cart();
@@ -189,6 +186,16 @@ class WC_Piwik extends WC_Integration {
                 });
             ";
 		}
+
+		return $code;
+	}
+
+	/**
+	 * Sends cart update request
+	 */
+	function update_cart() {
+
+		$code = $this->get_cart_items_js_code();
 
 		wc_enqueue_js( "
             " . $code . "
@@ -241,9 +248,12 @@ class WC_Piwik extends WC_Integration {
 
 	function send_update_cart_request() {
 		if ( ! empty( $_REQUEST['add-to-cart'] ) && is_numeric( $_REQUEST['add-to-cart'] ) ) {
-			wc_enqueue_js( "
-               $('body').trigger('added_to_cart');
-                " );
+			$code = $this->get_cart_items_js_code();
+			wc_enqueue_js( $code . "
+			    $(document).ready(function(){
+                    $('body').trigger('added_to_cart');
+                });
+            " );
 		}
 	}
 
@@ -277,20 +287,18 @@ class WC_Piwik extends WC_Integration {
 	 * Add actions using WooCommerce hooks
 	 */
 	protected function addActions() {
-
 		add_action( 'woocommerce_update_options_integration_piwik', array( $this, 'process_admin_options' ) );
 		add_action( 'wp_ajax_nopriv_woocommerce_piwik_get_cart', array( $this, 'get_cart' ) );
 		add_action( 'wp_ajax_woocommerce_piwik_get_cart', array( $this, 'get_cart' ) );
 		add_action( 'woocommerce_after_single_product_summary', array($this, 'product_view') );
 		add_action( 'woocommerce_after_shop_loop', array($this, 'category_view') );
 
-
 		if (
 			( ( empty( $this->piwik_idsite ) || ! is_numeric( $this->piwik_idsite ) || empty( $this->piwik_domain_name ) )
-			  && ! $this->is_wp_piwik_installed() )
+				&& ! $this->is_wp_piwik_installed() )
 			|| is_admin() || current_user_can( 'manage_options' )
 		) {
-            return;
+			return;
 		}
 
 		if ( $this->piwik_standard_tracking_enabled == 'yes' ) {
@@ -318,12 +326,12 @@ class WC_Piwik extends WC_Integration {
 		}
 	}
 
-    function category_view()
-    {
-        global $wp_query;
+	function category_view()
+	{
+		global $wp_query;
 
-        if (isset($wp_query->query_vars['product_cat']) && !empty($wp_query->query_vars['product_cat'])) {
-            $jsCode = sprintf("
+		if (isset($wp_query->query_vars['product_cat']) && !empty($wp_query->query_vars['product_cat'])) {
+			$jsCode = sprintf("
             _paq.push(['setEcommerceView',
                     false,
                     false,
@@ -331,15 +339,15 @@ class WC_Piwik extends WC_Integration {
             ]);
             _paq.push(['trackPageView']);
             ", urlencode($wp_query->queried_object->name));
-            wc_enqueue_js($jsCode);
-        }
-    }
+			wc_enqueue_js($jsCode);
+		}
+	}
 
-    function product_view()
-    {
-        global $product;
+	function product_view()
+	{
+		global $product;
 
-        $jsCode = sprintf("
+		$jsCode = sprintf("
             _paq.push(['setEcommerceView',
                     '%s',
                     '%s',
@@ -348,28 +356,28 @@ class WC_Piwik extends WC_Integration {
             ]);
             _paq.push(['trackPageView']);
         ",
-           $product->get_sku(),
-           urlencode($product->get_title()),
-           $this->getEncodedCategoriesByProduct($product),
-           $product->get_price()
-        );
-        wc_enqueue_js($jsCode);
-    }
+			$product->get_sku(),
+			urlencode($product->get_title()),
+			$this->getEncodedCategoriesByProduct($product),
+			$product->get_price()
+		);
+		wc_enqueue_js($jsCode);
+	}
 
-    protected function getEncodedCategoriesByProduct($product)
-    {
-        $categories = get_the_terms($product->post->ID, 'product_cat' );
+	protected function getEncodedCategoriesByProduct($product)
+	{
+		$categories = get_the_terms($product->post->ID, 'product_cat' );
 
-        if (!$categories) {
-            $categories = array();
-        }
+		if (!$categories) {
+			$categories = array();
+		}
 
-        $categories = array_map(function($element) {
-            return sprintf("'%s'", urlencode($element->name));
-        }, $categories);
+		$categories = array_map(function($element) {
+			return sprintf("'%s'", urlencode($element->name));
+		}, $categories);
 
-        return sprintf("[%s]", implode("', '", $categories));
-    }
+		return sprintf("[%s]", implode(", ", $categories));
+	}
 
 	protected function redirectToPiwikPro() {
 		if ( isset( $_GET['integrate-piwik-cloud'] ) && $_GET['integrate-piwik-cloud'] ) {
