@@ -30,6 +30,9 @@ In admin menu, click on WooCommerce -> Settings, and switch to Integration tab
 
 == Changelog ==
 
+= 2.1.2 - 15/01/2016 =
+ * Fixed issue with not traked orders
+
 = 2.1.1 - 08/04/2015 =
  * Fixed issue with missing categories
  * List of contributors was updated
