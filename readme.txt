@@ -1,5 +1,5 @@
 === WooCommerce Piwik integration ===
-Contributors: Piwik Pro, CoenJacobs
+Contributors: Piwik Pro
 Tags: woocommerce, piwik
 Donate link: http://piwik.pro/
 Requires at least: 3.5
@@ -29,6 +29,13 @@ Or use the automatic installation wizard through your admin panel, just search f
 In admin menu, click on WooCommerce -> Settings, and switch to Integration tab
 
 == Changelog ==
+
+= 2.1.2 - 15/01/2016 =
+ * Fixed issue with not traked orders
+
+= 2.1.1 - 08/04/2015 =
+ * Fixed issue with missing categories
+ * List of contributors was updated
 
 = 2.0 - 31/09/2014 =
  * Rewritten by Piwik PRO team
