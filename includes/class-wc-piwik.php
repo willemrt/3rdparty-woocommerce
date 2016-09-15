@@ -13,8 +13,6 @@ class WC_Piwik extends WC_Integration
 
     public $id;
 
-    public $form_text_fields = array();
-
     /**
      * Init and hook in the integration.
      */
@@ -55,7 +53,7 @@ class WC_Piwik extends WC_Integration
      */
     function init_form_fields()
     {
-        $this->form_text_fields = array(
+        $this->form_fields = array(
             'piwik_idsite' => array(
                 'title' => __('Piwik site ID', 'woocommerce'),
                 'description' => __('You can find site ID in Piwik administration panel', 'woocommerce'),
@@ -65,10 +63,7 @@ class WC_Piwik extends WC_Integration
                 'title' => __('Piwik domain', 'woocommerce'),
                 'description' => 'Location of your Piwik installation (without http(s)://, i.e. piwik.example.com)',
                 'type' => 'text'
-            )
-        );
-
-        $this->form_fields = array(
+            ),
             'piwik_standard_tracking_enabled' => array(
                 'title' => __('Tracking code', 'woocommerce'),
                 'label' => __('Add tracking code to your site. You don\'t need to enable this if using a 3rd party
@@ -555,11 +550,6 @@ class WC_Piwik extends WC_Integration
 
         include_once(__DIR__ . '/../templates/admin-options.php');
 
-    }
-
-    public function validate_settings_fields($form_fields = false)
-    {
-        parent::validate_settings_fields(array_merge($this->form_text_fields, $this->form_fields));
     }
 
     /**
