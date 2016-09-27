@@ -1,8 +1,6 @@
 # WooCommerce PiwikPRO Integration (bug fixed)
 
-I went ahead and got someone to fix this plugin. It cost me $200. 
-
-If you want you can send a paypal donation to willem_rt@yahoo.com.au with PIWIK Woocommerce in the notes somewhere and ill put it in a fund to help with any future bug fixes/improvements that we may need to keep us all running smoothly. 
+I went ahead and got someone to fix this plugin.
 
 
 
